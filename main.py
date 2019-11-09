@@ -1,8 +1,21 @@
 import os
 import base64
+import html
 
 from flask import Flask, request
 from model import Message 
+
+html_escape_table = {
+                    "&": "&amp;",
+                    '"': "&quot;",
+                    "'": "&apos;",
+                    ">": "&gt;",
+                    "<": "&lt;",
+                    }
+
+def html_escape(text):
+  """Produce entities within text."""
+  return "".join(html_escape_table.get(c,c) for c in text)
 
 app = Flask(__name__)
 
@@ -31,10 +44,24 @@ def home():
 <div class="message">
 {}
 </div>
-""".format(m.content)
-
+""".format(html_escape(m.content))
     return body 
 
+# <script>
+# alert('Hello Everybody!');
+# </script>
+# '<' and '>' are html control characters specifying tags, used in the message above to insert a javascript
+# after above modification messages loaded from database:
+# '&lt' and '&gt' are shown as '<' and '>' in the browsser in in the webpage body remains '&lt' and '&gt' 
+# <div class="message">
+# &lt;script&gt;
+# alert('Hello Everybody!');
+# &lt;/script&gt;
+# </div>
+
+#  hello
+# second message
+# <script> alert('Hello Everybody!'); </script> 
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 6738))
